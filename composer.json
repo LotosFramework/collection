@@ -1,0 +1,21 @@
+{
+    "name": "lotos/collection",
+    "type": "library",
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "McLotos",
+            "email": "mclotos@xakep.ru"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Lotos\\Collection\\": "src/"
+        }
+    },
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^7.0",
+        "php-ds/php-ds": "^1.2.0"
+    }
+}
