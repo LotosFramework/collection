@@ -16,7 +16,7 @@ use Ds\Sequence as SequenceInterface;
 class Collection extends Sequence
 {
 
-    public function __construct(array $item = null)
+    public function __construct($item = null)
     {
         if(is_array($item) && (array_keys($item) !== range(0, count($item) - 1)) && count($item)>0) {
             parent::__construct();

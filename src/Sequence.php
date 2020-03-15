@@ -23,7 +23,7 @@ class Sequence implements IteratorAggregate, SequenceInterface {
 
     private $items;
 
-    public function __construct(array $items = null)
+    public function __construct($items = null)
     {
         $this->items = (is_null($items))
             ? null
@@ -177,7 +177,7 @@ class Sequence implements IteratorAggregate, SequenceInterface {
         $this->items->sort($comparator);
     }
 
-    public function sorted(callable $comparator) : SequenceInterface
+    public function sorted(?callable $comparator = null) : SequenceInterface
     {
         return $this->items->sorted($comparator);
     }
