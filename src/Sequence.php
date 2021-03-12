@@ -18,6 +18,7 @@ use Ds\{
 };
 use \UnderflowException;
 use \IteratorAggregate;
+use \ArrayIterator;
 
 class Sequence implements IteratorAggregate, SequenceInterface {
 
