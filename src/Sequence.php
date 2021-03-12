@@ -234,4 +234,24 @@ class Sequence implements IteratorAggregate, SequenceInterface {
     {
         return $this->items->jsonSerialize();
     }
+
+    public function offsetSet($index, $value) : void
+    {
+        $this->set($index, $value);
+    }
+
+    public function offsetGet($index)
+    {
+        return $this->get($index);
+    }
+
+    public function offsetExists($index) : bool
+    {
+        return ($this->get($index) !== null);
+    }
+
+    public function offsetUnset($index) : void
+    {
+        $this->remove($index);
+    }
 }
