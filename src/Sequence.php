@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the (c)Lotos framework.
- *
- * (c) McLotos <mclotos@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Lotos\Collection;
 
@@ -16,198 +9,436 @@ use Ds\{
     Collection as CollectionInterface,
     Deque
 };
-use \UnderflowException;
 use \IteratorAggregate;
 use \ArrayIterator;
 
-class Sequence implements IteratorAggregate, SequenceInterface {
+/**
+ * Класс Sequence реализует базовый интерфейс Последовательности и дополняет его удобным функционалом
+ *
+ * @author McLotos <mclotos@xakep.ru>
+ * @copyright https://github.com/LotosFramework/Collection/COPYRIGHT.md
+ * @license https://github.com/LotosFramework/Collection/LICENSE.md
+ * @package Lotos\Collection
+ * @version 1.5.1
+ */
+class Sequence implements IteratorAggregate, SequenceInterface
+{
 
+    /**
+     * @var Deque $items - Элементы коллекции, записанные в очередь
+     */
     private $items;
 
+    /**
+     *  Конструктор класса Sequence может принять массив, один элемент коллеции или ничего не принимать
+     *
+     * @method __construct
+     * @param mixed|mixed[]|null Элемент или массив элементов для создания коллекции
+     */
     public function __construct($items = null)
     {
-        $this->items = (is_null($items))
-            ? null
-            : new Deque($items);
+        $this->items = new Deque($items);
     }
 
+    /**
+     * Метод allocate устанавливает вместимость коллекции
+     *  ограничивая количество элементов
+     *
+     * Метод гарантирует, что будет выделено необходимое количество памяти,
+     *  c помощью allocate нельзя уменьшать вместимость, можно только увеличивать.
+     *
+     * @method allocate
+     * @param int $capacity Новое значение вместимости
+     * @return void
+     */
     public function allocate(int $capacity) : void
     {
         $this->items->allocate($capacity);
     }
 
+    /**
+     * Метод apply обноляет все элементы коллекции, применяя к ним callback-функцию
+     *
+     * @method apply
+     * @param callable $callback Функция для изменения значения элемента коллекции
+     * @return void
+     */
     public function apply(callable $callback) : void
     {
         $this->items->apply($callback);
     }
 
+    /**
+     * Метод capacity возвращает текущую вместимость коллекции
+     *
+     * @method capacity
+     * @param void
+     * @return int Текущая вместимость коллекции
+     */
     public function capacity() : int
     {
         return $this->items->capacity();
     }
 
+    /**
+     * Метод contains проверяет, все ли переданные значения есть в коллекции
+     *
+     * @method contains
+     * @param mixed $values, ... любое количество элементов, или массив элементов,
+     *   которые нужно найти в коллекции
+     * @return bool Все ли переданные элементы найдены в коллекции
+     * @example contains('a') - проверит есть ли элемент 'a' в коллекции
+     * @example contains('a', 'b') - проверит есть ли элементы 'a' и 'b' в коллекции
+     * @example contains(['a', 'b']) - проверит есть ли элементы 'a' и 'b' в коллекции
+     */
     public function contains(...$values) : bool
     {
-        if($this->items) {
-            return call_user_func_array([$this->items, 'contains'], array_values($values));
-        } else {
-            return false;
-        }
+        return $this->items->contains(...$values);
     }
 
+    /**
+     * Метод filter использует callback-функцию для фильтрации массива
+     *
+     * @method filter
+     * @param callable|null $callback, Функция, возращающая bool для фильтрации коллекции
+     * @return Collection Коллекция, с оставшимися после фильтрации элементами
+     */
     public function filter(?callable $callback = null) : SequenceInterface
     {
-        if($this->items) {
-            return $this->items->filter($callback);
-        }
-        return new self();
+        return $this->newInstance($this->items->filter($callback)->toArray());
     }
 
-    public function find($value)
+    /**
+     * Метод find используется для получения индекса элемента, по его значению
+     *
+     * @method find
+     * @param mixed $value, Значение элемента, индекс которого нужно найти
+     * @return mixed Индекс найденного элемента коллекции
+     */
+    public function find(mixed $value) : mixed
     {
-        if($this->items) {
-            return $this->items->find($value);
-        }
-        return null;
+        return $this->items->find($value);
     }
 
-    public function first()
+    /**
+     * Метод first используется для получения первого элемента коллекции
+     *
+     * @method first
+     * @return mixed Элемент коллекции
+     */
+    public function first() : mixed
     {
-        if($this->items) {
-            return $this->items->first();
-        }
-        throw new UnderflowException('No items in collection');
+        return $this->items->first();
     }
 
-    public function get(int $index)
+    /**
+     * Метод get используется для получения элемента по его индексу
+     *
+     * @method get
+     * @param int Идентификатор элемента коллекции
+     * @return mixed Элемент коллекции
+     */
+    public function get(int $index) : mixed
     {
         return $this->items->get($index);
     }
 
+    /**
+     * Метод insert используется для добавления нового элемента в коллекцию
+     *
+     * @method insert
+     * @param int Идентификатор нового элемента коллекции
+     * @param mixed $values, ...Новые элементы коллекции
+     * @return void
+     */
     public function insert(int $index, ...$values) : void
     {
         $params = array_values($values);
         array_unshift($params, $index);
-        call_user_func_array([$this->items, 'insert'], array_values($params));
+        $this->items->insert(...$params);
     }
 
-    public function join(string $glue = null) : string
+    /**
+     * Метод join используется для склеивания коллекции в строку
+     *
+     * @method join
+     * @param string $glue Необязательный разделитель элементов
+     * @return string
+     */
+    public function join(?string $glue = null) : string
     {
         return $this->items->join($glue);
     }
 
-    public function last()
+    /**
+     * Метод last используется для получения последнего элемента коллекции
+     *
+     * @method last
+     * @return mixed
+     */
+    public function last() : mixed
     {
-        if($this->items) {
-            return $this->items->last();
-        } else {
-            return null;
-        }
+        return $this->items->last();
     }
 
+    /**
+     * Метод map используется для получения последнего элемента коллекции
+     *
+     * @method map
+     * @param callable $callback - Функция, выполняющая какие-то действия с каждым элементом коллекции
+     * @return Collection
+     */
     public function map(callable $callback) : SequenceInterface
     {
-        if($this->items) {
-            return $this->items->map($callback);
-        }
-        throw new UnderflowException('Not items in collection');
+        return $this->items->map($callback);
     }
 
-    public function merge($values) : SequenceInterface
+    /**
+     * Метод merge используется для объединения коллекции с новыми элементами
+     *
+     * @method merge
+     * @param mixed $values новые элементы коллекции
+     * @return Collection
+     */
+    public function merge(mixed $values) : SequenceInterface
     {
         return $this->items->merge($values);
     }
 
-    public function pop()
+    /**
+     * Метод pop извлекает последний элемент коллекции
+     *
+     * @method pop
+     * @return mixed
+     */
+    public function pop() :mixed
     {
         return $this->items->pop();
     }
 
+    /**
+     * Метод push добавляет новые элементы в коллекцию
+     *
+     * @method push
+     * @param mixed $values, ... Новые элементы коллекции
+     * @return void
+     */
     public function push(...$values) : void
     {
-        if($this->items) {
-            call_user_func_array([$this->items, 'push'], array_values($values));
-        } else {
-            $this->items = new Deque();
-            call_user_func_array([$this->items, 'push'], array_values($values));
-        }
+       $this->items->push(...$values);
     }
 
-    public function reduce(callable $callback, $initial = null)
+    /**
+     * Метод reduce уменьшает коллекцию до одного значения, используя callback-функцию
+     *
+     * @method reduce
+     * @param callable $callback Функция, выполняющая вычисления
+     * @param mixed|null $initial стартовый аргумент для функции обратного вызова
+     * @return void
+     */
+    public function reduce(callable $callback, $initial = null) : int
     {
         return $this->items->reduce($callback, $initial);
     }
 
-    public function remove(int $index)
+    /**
+     * Метод remove удаляет элемент коллекции по его индексу
+     *
+     * @method remove
+     * @param int $index Индекс удаляемого элемента
+     * @return mixed удаленный элемент
+     */
+    public function remove(int $index) : mixed
     {
         return $this->items->remove($index);
     }
 
+    /**
+     * Метод reverse разворачивает текущую коллекцию
+     *
+     * @method reverse
+     * @return void
+     * @example
+     * $collection = new Collection([1, 2, 3]);
+     * $colleciton->reverse();
+     * print_r($colleciton->toArray()); //[3, 2, 1]
+     */
     public function reverse() : void
     {
         $this->items->reverse();
     }
 
+    /**
+     * Метод reversed возвращает развернутую копию коллекции
+     *
+     * @method reversed
+     * @return Collection
+     * @example
+     * $collection = new Collection([1, 2, 3]);
+     * print_r($colleciton->reverse()->toArray()); //[3, 2, 1]
+     */
     public function reversed() : SequenceInterface
     {
         return $this->items->reversed();
     }
 
+    /**
+     * Метод rotate перематывает последовательность на указанное количество элементов
+     *
+     * @method rotate
+     * @return void
+     * @example
+     * $collection = new Collection([1, 2, 3, 4]);
+     * $collection->rotate(1);
+     * print_r($collection->toArray()); //[2, 3, 4, 1]
+     * @example
+     * $collection = new Collection([1, 2, 3, 4]);
+     * $collection->rotate(-1);
+     * print_r($collection->toArray()); //[4, 1, 2, 3]
+     */
     public function rotate(int $rotations) : void
     {
         $this->items->rotate($rotations);
     }
 
-    public function set(int $index, $value) : void
+    /**
+     * Метод set устанавливает значение для элемента коллекции по id элемента
+     *
+     * @method set
+     * @param int $index Идентификатор элемента коллекции
+     * @param mixed $value Новое значение для элемента
+     * @return void
+     */
+    public function set(int $index, mixed $value) : void
     {
         $this->items->set($index, $value);
     }
 
-    public function shift()
+    /**
+     * Метод shift извлекает первый элемент коллекции
+     *
+     * @method shift
+     * @param int $index Идентификатор элемента коллекции
+     * @param mixed $value Новое значение для элемента
+     * @return mixed
+     */
+    public function shift() : mixed
     {
         return $this->items->shift();
     }
 
+    /**
+     * Метод slice извлекает срез коллекции
+     *
+     * @method slice
+     * @param int $index Идентификатор первого элемента среза
+     * @param int $length Количество элементов среза
+     * @return Collection
+     * @example
+     *  $collection = new Collection([1, 2, 3, 4, 5])
+     *  print_r($collection->slice(2)); // [3, 4, 5]
+     * @example
+     *  $collection = new Collection([1, 2, 3, 4, 5])
+     *  print_r($collection->slice(1, 3)); // [2, 3, 4]
+     * @example
+     *  $collection = new Collection([1, 2, 3, 4, 5])
+     *  print_r($collection->slice(-2)); // [4, 5]
+     * @example
+     *  $collection = new Collection([1, 2, 3, 4, 5])
+     *  print_r($collection->slice(1, -1)); // [2, 3, 4]
+     */
     public function slice(int $index, ?int $length = null ) : SequenceInterface
     {
         return $this->items->slice($index, $length);
     }
 
+    /**
+     * Метод sort применяет к коллекции функцию сортировки
+     *
+     * @method sort
+     * @param callable $comparator Функция сортировки
+     * @return void
+     */
     public function sort(?callable $comparator = null) : void
     {
         $this->items->sort($comparator);
     }
 
+    /**
+     * Метод sorted применяет к копии коллекции функцию сортировки
+     *
+     * @method sorted
+     * @param callable $comparator Функция сортировки
+     * @return Collection Отсортированная копия коллекции
+     */
     public function sorted(?callable $comparator = null) : SequenceInterface
     {
         return $this->items->sorted($comparator);
     }
 
-    public function sum() : int
+    /**
+     * Метод sum возвращает сумму всех элементов коллекции
+     *
+     * @method sum
+     * @return int|float Сумма всех элементов коллекции
+     */
+    public function sum() : int | float
     {
         return $this->items->sum();
     }
 
+    /**
+     * Метод unshift добавляет новые элементы в начало коллекции
+     *
+     * @method unshoft
+     * @return void
+     */
     public function unshift(...$values) : void
     {
-        call_user_func_array([$this->items, 'unshift'], array_values($values));
+        $this->items->unshift(...$values);
     }
 
+    /**
+     * Метод getIterator возвращает ArrayIterator текущей коллекции
+     *   чтобы коллекцию можно было перебирать массивом
+     *
+     * @method getIterator
+     * @return ArrayIterator
+     */
     public function getIterator() : ArrayIterator
     {
         return new ArrayIterator($this);
     }
 
+    /**
+     * Метод clear очищает коллекцию
+     *
+     * @method clear
+     * @return Collection чистая коллекция
+     */
     public function clear() : SequenceInterface
     {
-        return $this->items->clear();
+        $this->items->clear();
+        return $this;
     }
 
+    /**
+     * Метод copy возвращает копию коллекции
+     *
+     * @method copy
+     * @return Collection Копия коллекции
+     */
     public function copy() : CollectionInterface
     {
         return $this->items->copy();
     }
 
+    /**
+     * Метод toArray конвертирует коллекцию в массив
+     *
+     * @method toArray
+     * @return array
+     */
     public function toArray() : array
     {
         if($this->items) {
@@ -217,11 +448,23 @@ class Sequence implements IteratorAggregate, SequenceInterface {
         }
     }
 
+    /**
+     * Метод isEmpty проверяет есть ли значения в коллекции
+     *
+     * @method isEmpty
+     * @return bool
+     */
     public function isEmpty() : bool
     {
         return $this->items->isEmpty();
     }
 
+    /**
+     * Метод count возвращает количество элементов в коллекции
+     *
+     * @method count
+     * @return int Количество элементов коллекции
+     */
     public function count() : int
     {
         if($this->items) {
@@ -231,26 +474,44 @@ class Sequence implements IteratorAggregate, SequenceInterface {
         }
     }
 
-    public function jsonSerialize()
+    /**
+     * Метод jsonSerialize возвращает сериализованную коллекцию
+     *
+     * @method jsonSerialize
+     * @return mixed
+     */
+    public function jsonSerialize() : mixed
     {
         return $this->items->jsonSerialize();
     }
 
+    /**
+     * @see set
+     */
     public function offsetSet($index, $value) : void
     {
         $this->set($index, $value);
     }
 
+    /**
+     * @see get
+     */
     public function offsetGet($index)
     {
         return $this->get($index);
     }
 
+    /**
+     * @see exists
+     */
     public function offsetExists($index) : bool
     {
         return ($this->get($index) !== null);
     }
 
+    /**
+     * @see remove
+     */
     public function offsetUnset($index) : void
     {
         $this->remove($index);
