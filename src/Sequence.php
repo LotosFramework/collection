@@ -182,7 +182,7 @@ class Sequence implements IteratorAggregate, SequenceInterface
     }
 
     /**
-     * Метод map используется для получения последнего элемента коллекции
+     * Метод map используется для применения callback-функции ко всем элементам коллекции
      *
      * @method map
      * @param callable $callback - Функция, выполняющая какие-то действия с каждым элементом коллекции
