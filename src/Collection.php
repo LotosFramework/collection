@@ -34,7 +34,11 @@ class Collection extends Sequence
             parent::__construct();
             $this->push($item);
         } else {
-            parent::__construct($item);
+            if ($item) {
+                parent::__construct($item);
+            } else {
+                parent::__construct([]);
+            }
         }
     }
 
