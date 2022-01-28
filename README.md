@@ -78,6 +78,13 @@ $collection->whereIn(string $property, array $values) : Collection
 $collection->whereNotIn(string $property, array $values) : Collection
 
 /**
+ * первым аргументом передаем свойство
+ * вторым аргументом передаем строка с возможным значением, 
+ * вернутся все элементы, у которых значение выбранного свойства содержит искомое слово
+ **/
+$collection->whereContain(string $param, string $value) : Collection
+
+/**
  * передаем свойство, по которому нужно провести проверку
  * вернутся все элементы коллекции,
  * у которых это свойство === NULL

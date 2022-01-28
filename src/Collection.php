@@ -152,6 +152,28 @@ class Collection extends Sequence
     }
 
     /**
+     * Метод whereContain возвращает результат фильтрации по частичному совпадению
+     *
+     * Метод проверяет значение на частичное совпадение переданным значениям
+     *  и возвращает коллекцию, заполненную элементами,
+     *  у которых значение выбранного свойства содержит искомое слово.
+     *
+     * @method whereContain
+     * @param string $зфкфь, Свойство, которое будет проверяться на частичное совпадение
+     * @param array $value, Текст, с которым проводится сверка
+     * @example whereContain('name', 'la') age like '%la%'
+     * @return Collection Коллекция, заполненная результатами выборки
+     */
+    public function whereContain(string $param, string $value) : SequenceInterface
+    {
+        return $this->newInstance($this->filter(function($elem) use ($param, $value) {
+            $length = strlen($value);
+            $method = 'get'.ucfirst($param);
+            return (substr($elem->$method(), 0, $length) == substr($value, 0, $length));
+        })->toArray());
+    }
+
+    /**
      * Метод для сопоставления символа с операцией
      *
      * @method getExpressionResult
