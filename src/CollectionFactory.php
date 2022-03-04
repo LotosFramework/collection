@@ -11,7 +11,7 @@ namespace Lotos\Collection;
  * @copyright https://github.com/LotosFramework/Collection/COPYRIGHT.md
  * @license https://github.com/LotosFramework/Collection/LICENSE.md
  * @package Lotos\Collection
- * @version 1.5.1
+ * @version 2.0.0
  */
 class CollectionFactory
 {

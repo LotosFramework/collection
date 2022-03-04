@@ -7,6 +7,37 @@ namespace LotosTest\Collection;
 use Lotos\Collection\{Collection, CollectionFactory};
 use PHPUnit\Framework\TestCase;
 
+class TestCollectionClass
+{
+    public function __construct(
+        private int|string $foo,
+        private int|string $bar,
+        private ?bool $isBaz = null,
+        private ?bool $isQux = null
+    )
+    {}
+
+    public function getFoo() : int|string
+    {
+        return $this->foo;
+    }
+
+    public function getBar() : int|string
+    {
+        return $this->bar;
+    }
+
+    public function isBaz() : ?bool
+    {
+        return $this->isBaz;
+    }
+
+    public function isQux() : ?bool
+    {
+        return $this->isQux;
+    }
+}
+
 class CollectionTest extends TestCase
 {
 
@@ -60,6 +91,7 @@ class CollectionTest extends TestCase
         $this->assertEquals(
             CollectionFactory::createCollection($data)->where($property, $value)->toArray(),
             $result,
+            'Не удалось получить правильный ответ'
         );
     }
 
@@ -67,113 +99,61 @@ class CollectionTest extends TestCase
     {
         return [
             [
+                'Поиск по foo без учета типа' =>
                 [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 0, 'bar' => 3, 'baz' => 0],
+                    ['foo' => '0', 'bar' => '3', 'baz' => '0'],
+                    ['foo' => 1, 'bar' => 0, 'baz' => 2],
+                    ['foo' => '1', 'bar' => '3', 'baz' => '3'],
+                    (new TestCollectionClass(foo: 0, bar: 1, isBaz: true)),
+                    (new TestCollectionClass(foo: '0', bar: 1, isBaz: true)),
                 ],'foo', 0,
                 [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 0, 'bar' => 3, 'baz' => 0],
+                    ['foo' => '0', 'bar' => '3', 'baz' => '0'],
+                    (new TestCollectionClass(foo: 0, bar: 1, isBaz: true)),
+                    (new TestCollectionClass(foo: '0', bar: 1, isBaz: true)),
                 ]
             ],
             [
+                'Поиск по bar без учета типа' =>
                 [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 0, 'bar' => 3, 'baz' => 0],
+                    ['foo' => '0', 'bar' => '3', 'baz' => '0'],
+                    ['foo' => 1, 'bar' => 0, 'baz' => 2],
+                    ['foo' => '1', 'bar' => '3', 'baz' => '3'],
+                    (new TestCollectionClass(foo: 0, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: '0', bar: 1, isBaz: true)),
                 ],'bar', 0,
                 [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 0, 'baz' => 2],
+                    (new TestCollectionClass(foo: 0, bar: 0, isBaz: true)),
                 ]
             ],
             [
+                'Поиск по baz === true' =>
                 [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'baz', 0,
+                    ['foo' => 0, 'bar' => 3, 'baz' => true],
+                    ['foo' => '0', 'bar' => '3', 'baz' => false],
+                    ['foo' => 1, 'bar' => 0, 'baz' => false],
+                    ['foo' => '1', 'bar' => '3', 'baz' => null],
+                ],'baz', true,
                 [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0]
+                    ['foo' => 0, 'bar' => 3, 'baz' => true],
                 ]
             ],
             [
+                'Поиск по baz === true' =>
                 [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'foo', 1,
+                    ['foo' => 0, 'bar' => 3, 'baz' => true],
+                    ['foo' => '0', 'bar' => '3', 'baz' => false],
+                    ['foo' => 1, 'bar' => 0, 'baz' => false],
+                ],'baz', false,
                 [
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => '0', 'bar' => '3', 'baz' => false],
+                    ['foo' => 1, 'bar' => 0, 'baz' => false],
                 ]
-            ],
-            [
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'bar', 1,
-                [
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ]
-            ],
-            [
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'baz', 1,
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ]
-            ],
+            ]
         ];
     }
 
@@ -212,11 +192,16 @@ class CollectionTest extends TestCase
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 0, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '0', bar: 1, isBaz: true)),
                 ],'foo', 0, 'bar', 0,
                 [
                     ['foo' => 0, 'bar' => 0, 'baz' => 0],
                     ['foo' => 0, 'bar' => 0, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 0, bar: '0', isBaz: true)),
                 ]
             ],
             [
@@ -228,171 +213,31 @@ class CollectionTest extends TestCase
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'foo', 1, 'bar', 0,
-                [
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                ]
-            ],
-            [
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'foo', 0, 'bar', 1,
-                [
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                ]
-            ],
-            [
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'foo', 1, 'bar', 1,
-                [
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ]
-            ],
-            [
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'foo', 0, 'baz', 0,
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                ]
-            ],
-            [
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'foo', 1, 'baz', 0,
-                [
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                ]
-            ],
-            [
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'foo', 0, 'baz', 1,
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                ]
-            ],
-            [
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'foo', 1, 'baz', 1,
-                [
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 1, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: '1', bar: '0', isBaz: true)),
+                ],'foo', 1, 'bar', '0',
+                [
+                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
+                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
+                    (new TestCollectionClass(foo: 1, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: '1', bar: '0', isBaz: true)),
                 ]
             ],
             [
                 [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'bar', 0, 'baz', 0,
+                    ['foo' => 0, 'bar' => 0, 'baz' => false],
+                    ['foo' => 0, 'bar' => 0, 'baz' => true],
+                    ['foo' => 0, 'bar' => 1, 'baz' => false],
+                    ['foo' => 0, 'bar' => 1, 'baz' => true],
+                    ['foo' => 1, 'bar' => 0, 'baz' => false],
+                    ['foo' => 1, 'bar' => 0, 'baz' => true],
+                    ['foo' => 1, 'bar' => 1, 'baz' => false],
+                    ['foo' => 1, 'bar' => 1, 'baz' => true],
+                ],'foo', 0, 'baz', true,
                 [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                ]
-            ],
-            [
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'bar', 1, 'baz', 0,
-                [
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                ]
-            ],
-            [
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'bar', 0, 'baz', 1,
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                ]
-            ],
-            [
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ],'bar', 1, 'baz', 1,
-                [
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    ['foo' => 0, 'bar' => 0, 'baz' => true],
+                    ['foo' => 0, 'bar' => 1, 'baz' => true],
                 ]
             ],
         ];
@@ -431,13 +276,22 @@ class CollectionTest extends TestCase
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 0, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '0', bar: 1, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '1', bar: 1, isBaz: true)),
                 ], 'foo', '<', 1,
                 [
                     ['foo' => 0, 'bar' => 0, 'baz' => 0],
                     ['foo' => 0, 'bar' => 0, 'baz' => 1],
                     ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 0, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '0', bar: 1, isBaz: true)),
                 ]
             ],
             [
@@ -449,13 +303,23 @@ class CollectionTest extends TestCase
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 0, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '0', bar: 1, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '1', bar: 1, isBaz: true)),
+
                 ], 'foo', '=', 1,
                 [
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 1, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '1', bar: 1, isBaz: true)),
                 ]
             ],
             [
@@ -467,13 +331,22 @@ class CollectionTest extends TestCase
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 0, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '0', bar: 1, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '1', bar: 1, isBaz: true)),
                 ], 'foo', '>', 0,
                 [
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 1, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '1', bar: 1, isBaz: true)),
                 ]
             ],
             [
@@ -485,13 +358,22 @@ class CollectionTest extends TestCase
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ], 'foo', '<', 1,
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 0, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '0', bar: 1, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '1', bar: 1, isBaz: true)),
+                ], 'foo', '<', '1',
                 [
                     ['foo' => 0, 'bar' => 0, 'baz' => 0],
                     ['foo' => 0, 'bar' => 0, 'baz' => 1],
                     ['foo' => 0, 'bar' => 1, 'baz' => 0],
                     ['foo' => 0, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 0, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '0', bar: 1, isBaz: true)),
                 ]
             ],
             [
@@ -503,13 +385,23 @@ class CollectionTest extends TestCase
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0)),
+                    (new TestCollectionClass(foo: 0, bar: '0')),
+                    (new TestCollectionClass(foo: '0', bar: 1)),
+                    (new TestCollectionClass(foo: 1, bar: 0)),
+                    (new TestCollectionClass(foo: 1, bar: '0')),
+                    (new TestCollectionClass(foo: '1', bar: 1)),
                 ], 'bar', '<', 1,
                 [
                     ['foo' => 0, 'bar' => 0, 'baz' => 0],
                     ['foo' => 0, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0)),
+                    (new TestCollectionClass(foo: 0, bar: '0')),
+                    (new TestCollectionClass(foo: 1, bar: 0)),
+                    (new TestCollectionClass(foo: 1, bar: '0')),
                 ]
             ],
             [
@@ -521,13 +413,21 @@ class CollectionTest extends TestCase
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0)),
+                    (new TestCollectionClass(foo: 0, bar: '0')),
+                    (new TestCollectionClass(foo: '0', bar: 1)),
+                    (new TestCollectionClass(foo: 1, bar: 0)),
+                    (new TestCollectionClass(foo: 1, bar: '0')),
+                    (new TestCollectionClass(foo: '1', bar: '1')),
                 ], 'bar', '=', 1,
                 [
                     ['foo' => 0, 'bar' => 1, 'baz' => 0],
                     ['foo' => 0, 'bar' => 1, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: '0', bar: 1)),
+                    (new TestCollectionClass(foo: '1', bar: '1')),
                 ]
             ],
             [
@@ -539,13 +439,21 @@ class CollectionTest extends TestCase
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0)),
+                    (new TestCollectionClass(foo: 0, bar: '0')),
+                    (new TestCollectionClass(foo: '0', bar: 1)),
+                    (new TestCollectionClass(foo: 1, bar: 0)),
+                    (new TestCollectionClass(foo: 1, bar: '0')),
+                    (new TestCollectionClass(foo: '1', bar: '1')),
                 ], 'bar', '>', 0,
                 [
                     ['foo' => 0, 'bar' => 1, 'baz' => 0],
                     ['foo' => 0, 'bar' => 1, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: '0', bar: 1)),
+                    (new TestCollectionClass(foo: '1', bar: '1')),
                 ]
             ],
             [
@@ -557,85 +465,71 @@ class CollectionTest extends TestCase
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0)),
+                    (new TestCollectionClass(foo: 0, bar: '0')),
+                    (new TestCollectionClass(foo: '0', bar: 1)),
+                    (new TestCollectionClass(foo: 1, bar: 0)),
+                    (new TestCollectionClass(foo: 1, bar: '0')),
+                    (new TestCollectionClass(foo: '1', bar: '1')),
                 ], 'bar', '<', 1,
                 [
                     ['foo' => 0, 'bar' => 0, 'baz' => 0],
                     ['foo' => 0, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1]
+                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0)),
+                    (new TestCollectionClass(foo: 0, bar: '0')),
+                    (new TestCollectionClass(foo: 1, bar: 0)),
+                    (new TestCollectionClass(foo: 1, bar: '0')),
                 ]
             ],
             [
                 [
                     ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
+                    ['foo' => 0, 'bar' => '0', 'baz' => 1],
                     ['foo' => 0, 'bar' => 1, 'baz' => 0],
                     ['foo' => 0, 'bar' => 1, 'baz' => 1],
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ], 'baz', '<', 1,
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 0, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '0', bar: 1, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '1', bar: 1, isBaz: true)),
+                ], 'bar', '===', 0,
                 [
                     ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
+                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: 0, isBaz: true)),
                 ]
             ],
             [
                 [
                     ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
+                    ['foo' => 0, 'bar' => '0', 'baz' => 1],
                     ['foo' => 0, 'bar' => 1, 'baz' => 0],
                     ['foo' => 0, 'bar' => 1, 'baz' => 1],
                     ['foo' => 1, 'bar' => 0, 'baz' => 0],
                     ['foo' => 1, 'bar' => 0, 'baz' => 1],
                     ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ], 'baz', '=', 1,
+                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 0, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '0', bar: 1, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: 0, isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: '1', bar: 1, isBaz: true)),
+                ], 'bar', '===', '0',
                 [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ]
-            ],
-            [
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ], 'baz', '>', 0,
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ]
-            ],
-            [
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1]
-                ], 'baz', '=', 0,
-                [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0]
+                    ['foo' => 0, 'bar' => '0', 'baz' => 1],
+                    (new TestCollectionClass(foo: 0, bar: '0', isBaz: true)),
+                    (new TestCollectionClass(foo: 1, bar: '0', isBaz: true)),
                 ]
             ],
         ];
@@ -666,42 +560,42 @@ class CollectionTest extends TestCase
         return [
             [
                 [
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 2],
-                    ['foo' => 0, 'bar' => 2, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 2, 'baz' => 2],
-                    ['foo' => 2, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 2, 'bar' => 0, 'baz' => 2],
-                    ['foo' => 2, 'bar' => 2, 'baz' => 0],
-                    ['foo' => 2, 'bar' => 2, 'baz' => 2],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 0, 'baz' => 3],
-                    ['foo' => 0, 'bar' => 3, 'baz' => 0],
-                    ['foo' => 0, 'bar' => 3, 'baz' => 3],
-                    ['foo' => 3, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 3, 'bar' => 0, 'baz' => 3],
-                    ['foo' => 3, 'bar' => 3, 'baz' => 0],
-                    ['foo' => 3, 'bar' => 3, 'baz' => 3]
+                    ['foo' => 0, 'bar' => 0],
+                    ['foo' => 0, 'bar' => 0],
+                    ['foo' => 0, 'bar' => 1],
+                    ['foo' => 0, 'bar' => 1],
+                    ['foo' => 1, 'bar' => 0],
+                    ['foo' => 1, 'bar' => 0],
+                    ['foo' => 1, 'bar' => 1],
+                    ['foo' => 1, 'bar' => 1],
+                    ['foo' => 0, 'bar' => 0],
+                    ['foo' => 0, 'bar' => 0],
+                    ['foo' => 0, 'bar' => 2],
+                    ['foo' => 0, 'bar' => 2],
+                    ['foo' => 2, 'bar' => 0],
+                    ['foo' => 2, 'bar' => 0],
+                    ['foo' => 2, 'bar' => 2],
+                    ['foo' => 2, 'bar' => 2],
+                    ['foo' => 0, 'bar' => 0],
+                    ['foo' => 0, 'bar' => 0],
+                    ['foo' => 0, 'bar' => 3],
+                    ['foo' => 0, 'bar' => 3],
+                    ['foo' => 3, 'bar' => 0],
+                    ['foo' => 3, 'bar' => 0],
+                    ['foo' => 3, 'bar' => 3],
+                    ['foo' => 3, 'bar' => 3],
                 ],
                 'foo',
                 [1, 2],
                 [
-                    ['foo' => 1, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 0, 'baz' => 1],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 0],
-                    ['foo' => 1, 'bar' => 1, 'baz' => 1],
-                    ['foo' => 2, 'bar' => 0, 'baz' => 0],
-                    ['foo' => 2, 'bar' => 0, 'baz' => 2],
-                    ['foo' => 2, 'bar' => 2, 'baz' => 0],
-                    ['foo' => 2, 'bar' => 2, 'baz' => 2]
+                    ['foo' => 1, 'bar' => 0],
+                    ['foo' => 1, 'bar' => 0],
+                    ['foo' => 1, 'bar' => 1],
+                    ['foo' => 1, 'bar' => 1],
+                    ['foo' => 2, 'bar' => 0],
+                    ['foo' => 2, 'bar' => 0],
+                    ['foo' => 2, 'bar' => 2],
+                    ['foo' => 2, 'bar' => 2],
                 ]
             ],
             [
@@ -729,7 +623,7 @@ class CollectionTest extends TestCase
                     ['foo' => 3, 'bar' => 0, 'baz' => 0],
                     ['foo' => 3, 'bar' => 0, 'baz' => 3],
                     ['foo' => 3, 'bar' => 3, 'baz' => 0],
-                    ['foo' => 3, 'bar' => 3, 'baz' => 3]
+                    ['foo' => 3, 'bar' => 3, 'baz' => 3],
                 ],
                 'bar',
                 [0, 2],

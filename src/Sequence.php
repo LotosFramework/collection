@@ -11,6 +11,7 @@ use Ds\{
 };
 use \IteratorAggregate;
 use \ArrayIterator;
+use \Traversable;
 
 /**
  * Класс Sequence реализует базовый интерфейс Последовательности и дополняет его удобным функционалом
@@ -19,7 +20,7 @@ use \ArrayIterator;
  * @copyright https://github.com/LotosFramework/Collection/COPYRIGHT.md
  * @license https://github.com/LotosFramework/Collection/LICENSE.md
  * @package Lotos\Collection
- * @version 1.5.1
+ * @version 2.0.0
  */
 class Sequence implements IteratorAggregate, SequenceInterface
 {
@@ -405,7 +406,7 @@ class Sequence implements IteratorAggregate, SequenceInterface
      * @method getIterator
      * @return ArrayIterator
      */
-    public function getIterator() : ArrayIterator
+    public function getIterator() : Traversable
     {
         return new ArrayIterator($this);
     }
@@ -496,7 +497,7 @@ class Sequence implements IteratorAggregate, SequenceInterface
     /**
      * @see get
      */
-    public function offsetGet($index)
+    public function offsetGet(mixed $index) : mixed
     {
         return $this->get($index);
     }

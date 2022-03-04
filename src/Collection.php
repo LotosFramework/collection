@@ -17,7 +17,7 @@ use Ds\Sequence as SequenceInterface;
  * @copyright https://github.com/LotosFramework/Collection/COPYRIGHT.md
  * @license https://github.com/LotosFramework/Collection/LICENSE.md
  * @package Lotos\Collection
- * @version 1.5.1
+ * @version 2.0.0
  */
 class Collection extends Sequence
 {
@@ -28,17 +28,17 @@ class Collection extends Sequence
      * @method __construct
      * @param mixed|mixed[]|null Элемент или массив элементов для создания коллекции
      */
-    public function __construct($item = null)
+    public function __construct(mixed $item = null)
     {
-        if(is_array($item) && (array_keys($item) !== range(0, count($item) - 1)) && count($item)>0) {
+        if(
+            is_array($item) &&
+            (array_keys($item) !== range(0, count($item) - 1)) &&
+            count($item) > 0
+        ) {
             parent::__construct();
             $this->push($item);
         } else {
-            if ($item) {
-                parent::__construct($item);
-            } else {
-                parent::__construct([]);
-            }
+            parent::__construct($item ?? []);
         }
     }
 
@@ -57,7 +57,7 @@ class Collection extends Sequence
      * @param mixed $params, ... Имя свойства, символ и значение для поиска
      * @example where('name', 'Alice')
      * @example where('age', '>', 18)
-     * @return Collection Коллекция, заполненная результатами выборки
+     * @return SequenceInterface Коллекция, заполненная результатами выборки
      */
     public function where(...$params) : SequenceInterface
     {
@@ -66,19 +66,7 @@ class Collection extends Sequence
             2 => list($prop, $value) = $params,
             default => null,
         };
-        $symbol = ($symbol) ?? '=';
-        $filtered = $this->filter(function($elem) use ($prop, $symbol, $value) {
-            if(is_array($elem)) {
-                return $this->getExpressionResult($elem[$prop], $symbol, $value);
-            } elseif(is_object($elem)) {
-                $method = 'get' . ucfirst($prop);
-                return match (true) {
-                    method_exists($elem, $method) => $this->getExpressionResult($elem->$method(), $symbol, $value),
-                    substr($prop, 0, 2) == 'is' => $this->getExpressionResult($elem->$prop(), $symbol, $value)
-                };
-            }
-        })->toArray();
-        return $this->newInstance($filtered);
+        return $this->getFilteredInstance(property: $prop, symbol: ($symbol) ?? '=', value: $value);
     }
 
     /**
@@ -93,16 +81,15 @@ class Collection extends Sequence
      * @param array $values, Диапазон возможных значений свойства
      * @example whereBetween('age', [18, 25]) age >= 18 && <=25
      * @example whereBetween('age', [25, 18]) age >= 18 && <=25
-     * @return Collection Коллекция, заполненная результатами выборки
+     * @return SequenceInterface Коллекция, заполненная результатами выборки
      */
     public function whereBetween(string $property, array $values) : SequenceInterface
     {
         return $this->newInstance($this->filter(function($elem) use ($property, $values) {
-            if($values[0] >= $values[1]) {
-                return (($elem[$property] <= $values[0]) && ($elem[$property] >= $values[1]));
-            } elseif($values[0] <= $values[1]) {
-                return (($elem[$property] <= $values[1]) && ($elem[$property] >= $values[0]));
-            }
+            return match(true) {
+                $values[0] >= $values[1] => (($elem[$property] <= $values[0]) && ($elem[$property] >= $values[1])),
+                $values[0] <= $values[1] => (($elem[$property] <= $values[1]) && ($elem[$property] >= $values[0]))
+            };
         })->toArray());
     }
 
@@ -117,7 +104,7 @@ class Collection extends Sequence
      * @param string $property, Свойство, которое будет проверяться на соответствие значениям
      * @param array $values, Возможные значения свойства
      * @example whereIn('age', [18, 25]) age=18 or age=25
-     * @return Collection Коллекция, заполненная результатами выборки
+     * @return SequenceInterface Коллекция, заполненная результатами выборки
      */
     public function whereIn(string $property, array $values) : SequenceInterface
     {
@@ -137,17 +124,16 @@ class Collection extends Sequence
      * @param string $property, Свойство, которое будет проверяться на соответствие значениям
      * @param array $values, Исключающие значения свойства
      * @example whereNotIn('age', [18, 25]) age !== 18 and age !== 25
-     * @return Collection Коллекция, заполненная результатами выборки
+     * @return SequenceInterface Коллекция, заполненная результатами выборки
      */
-    public function whereNotIn(string $property, array $values) :SequenceInterface
+    public function whereNotIn(string $property, array $values) : SequenceInterface
     {
-        return $this->newInstance($this->filter(function($elem) use ($property, $values) {
-            if(is_array($elem) && (array_key_exists($property, $elem))) {
-                return (!in_array($elem[$property], $values));
-            } elseif(is_object($elem) && property_exists($elem, $property)) {
-                $method = 'get'.ucfirst($property);
-                return (!in_array($elem->$method(), $values));
-            }
+        $method = 'get'.ucfirst($property);
+        return $this->newInstance($this->filter(function($elem) use ($property, $values, $method) {
+            return match(true) {
+                is_array($elem) && (array_key_exists($property, $elem)) => (!in_array($elem[$property], $values)),
+                is_object($elem) && property_exists($elem, $property) => (!in_array($elem->$method(), $values))
+            };
         })->toArray());
     }
 
@@ -159,10 +145,10 @@ class Collection extends Sequence
      *  у которых значение выбранного свойства содержит искомое слово.
      *
      * @method whereContain
-     * @param string $зфкфь, Свойство, которое будет проверяться на частичное совпадение
-     * @param array $value, Текст, с которым проводится сверка
+     * @param string $param, Свойство, которое будет проверяться на частичное совпадение
+     * @param string $value, Текст, с которым проводится сверка
      * @example whereContain('name', 'la') age like '%la%'
-     * @return Collection Коллекция, заполненная результатами выборки
+     * @return SequenceInterface Коллекция, заполненная результатами выборки
      */
     public function whereContain(string $param, string $value) : SequenceInterface
     {
@@ -174,39 +160,60 @@ class Collection extends Sequence
     }
 
     /**
+     * Метод whereNull возвращает результат фильтрации по списку значений
+     *
+     * Метод проверяет значение на пустоту
+     *  и возвращает коллекцию, заполненную элементами,
+     *  у которых указанное свойство пустое.
+     *
+     * @method whereNull
+     * @param string $property, Свойство, которое будет проверяться на пустоту
+     * @example whereNull('age') age === null
+     * @return SequenceInterface Коллекция, заполненная результатами выборки
+     */
+    public function whereNull($property) : SequenceInterface
+    {
+        return $this->getFilteredInstance(property: $property, symbol: '===', value: null);
+    }
+
+    /**
+     * Метод whereNotNull возвращает результат фильтрации по списку значений
+     *
+     * Метод проверяет значение на пустоту
+     *  и возвращает коллекцию, заполненную элементами,
+     *  у которых указанное свойство не пустое.
+     *
+     * @method whereNotNull
+     * @param string $property, Свойство, которое будет проверяться на пустоту
+     * @example whereNotNull('age') age !== null
+     * @return SequenceInterface Коллекция, заполненная результатами выборки
+     */
+    public function whereNotNull($property) : SequenceInterface
+    {
+        return $this->getFilteredInstance(property: $property, symbol: '!==', value: null);
+    }
+
+    /**
      * Метод для сопоставления символа с операцией
      *
      * @method getExpressionResult
      * @param mixed $val1, Значение которое будет проверяться на соответствие
      * @param string $symbol, Используемый символ
-     * @param mixed $value Значение, с которым производится сравнение
+     * @param mixed $val2 Значение, с которым производится сравнение
      * @return bool True если значение выражения верно или false
      */
     private function getExpressionResult(mixed $val1, string $symbol, mixed $val2) : bool
     {
-        switch($symbol) {
-            case '>':
-                return ($val1 > $val2);
-            break;
-            case '<':
-                return ($val1 < $val2);
-            break;
-            case '=':
-                return ($val1 == $val2);
-            break;
-            case '>=':
-                return ($val1 >= $val2);
-            break;
-            case '<=':
-                return ($val1 <= $val2);
-            break;
-            case '<>':
-                return ($val1 <> $val2);
-            break;
-            case '!=':
-                return ($val1 != $val2);
-            break;
-        }
+        return match($symbol) {
+            '>' => ($val1 > $val2),
+            '<' => ($val1 < $val2),
+            '=', '==', => ($val1 == $val2),
+            '===' => ($val1 === $val2),
+            '>=', '=>' => ($val1 >= $val2),
+            '<=', '=<' => ($val1 <= $val2),
+            '<>', '!=' => ($val1 != $val2),
+            '!==' => ($val1 !== $val2)
+        };
     }
 
     /**
@@ -233,59 +240,33 @@ class Collection extends Sequence
     }
 
     /**
-     * Метод whereNull возвращает результат фильтрации по списку значений
+     * Метод getFilteredInstance производит фильтрацию коллеции и возвращает результат
+     *   фильтрации по условию
      *
-     * Метод проверяет значение на пустоту
-     *  и возвращает коллекцию, заполненную элементами,
-     *  у которых указанное свойство пустое.
+     * Первым аргументом всегда передается название свойства (ключа),
+     *   по которому будет производиться поиск.
+     * Вторым аргументом можно передавать знаки >, <, =, >=, <=, <>, !=
+     * Третьим передаете значение
      *
-     * @method whereNull
-     * @param string $property, Свойство, которое будет проверяться на пустоту
-     * @example whereNull('age') age === null
-     * @return Collection Коллекция, заполненная результатами выборки
+     * @method getFilteredInstance
+     * @param string $property Свойство, по которому производится фильтрация,
+     * @param string $symbol Условие фильтрации
+     * @param mixed $value Значение, с которым проводится сравнение
+     * @example getFilteredInstance('name', 'Alice')
+     * @example getFilteredInstance('age', '>', 18)
+     * @return SequenceInterface Коллекция, заполненная результатами выборки
      */
-    public function whereNull($property) : SequenceInterface
+    private function getFilteredInstance(string $property, string $symbol, mixed $value) : SequenceInterface
     {
-        return $this->newInstance($this->filter(function($elem) use ($property) {
-            if(is_array($elem)) {
-                return is_null($elem[$property]);
-            } elseif(is_object($elem)) {
-                $method = 'get' . ucfirst($property);
-                if(method_exists($elem, $method)) {
-                    return is_null($elem->$method());
-                } elseif(substr($property, 0, 2) == 'is') {
-                    return is_null($elem->$property());
+        $method = 'get' . ucfirst($property);
+        return $this->newInstance($this->filter(function($elem) use ($property, $symbol, $value, $method) {
+            return match(true) {
+                is_array($elem) => $this->getExpressionResult($elem[$property], $symbol, $value),
+                is_object($elem) => match(true) {
+                    method_exists($elem, $method) => $this->getExpressionResult($elem->$method(), $symbol, $value),
+                    substr($property, 0, 2) == 'is' => $this->getExpressionResult($elem->$property(), $symbol, $value)
                 }
-                return is_null($elem->$method());
-            }
-        })->toArray());
-    }
-
-    /**
-     * Метод whereNotNull возвращает результат фильтрации по списку значений
-     *
-     * Метод проверяет значение на пустоту
-     *  и возвращает коллекцию, заполненную элементами,
-     *  у которых указанное свойство не пустое.
-     *
-     * @method whereNotNull
-     * @param string $property, Свойство, которое будет проверяться на пустоту
-     * @example whereNotNull('age') age !== null
-     * @return Collection Коллекция, заполненная результатами выборки
-     */
-    public function whereNotNull($property) : SequenceInterface
-    {
-        return $this->newInstance($this->filter(function($elem) use ($property) {
-            if(is_array($elem)) {
-                return !is_null($elem[$property]);
-            } else {
-                $method = 'get'.$property;
-                if(method_exists($elem, $method)) {
-                    return !is_null($elem->$method());
-                } elseif(substr($property, 0, 2) == 'is') {
-                    return !is_null($elem->$property());
-                }
-            }
+            };
         })->toArray());
     }
 }
